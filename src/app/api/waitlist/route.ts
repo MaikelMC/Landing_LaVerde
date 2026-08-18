@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readFile, writeFile } from "fs/promises";
 import { join } from "path";
+import { list, put } from "@vercel/blob";
 import { notificarTodo, notificarUsuario } from "@/lib/notify";
 import { isProvincia } from "@/lib/provincias";
 
 // Almacenamiento de la waitlist.
-// - En Vercel: si existe VERCEL_BLOB_READ_WRITE_TOKEN, se usa Blob (free tier).
+// - En Vercel: si existe BLOB_READ_WRITE_TOKEN (Vercel Blob, free tier), se usa Blob.
 // - Fallback local (dev): un archivo JSON dentro de .next para persistir entre reinicios.
-// Este archivo NO es la fuente de verdad de producción definitiva; buscá robustez.
 
 type Tipo = "usuario" | "negocio";
 
@@ -23,6 +23,10 @@ interface Registro {
 const TELEFONO_RE = /^\+?[0-9][0-9\s().-]{6,17}$/;
 const TIPOS: Tipo[] = ["usuario", "negocio"];
 const DB_PATH = join(process.cwd(), ".next", "waitlist.json");
+const BLOB_PATH = "waitlist.json";
+
+const BLOB_TOKEN =
+  process.env.BLOB_READ_WRITE_TOKEN || process.env.VERCEL_BLOB_READ_WRITE_TOKEN;
 
 async function readLocal(): Promise<Registro[]> {
   try {
@@ -37,6 +41,37 @@ async function readLocal(): Promise<Registro[]> {
 
 async function writeLocal(regs: Registro[]): Promise<void> {
   await writeFile(DB_PATH, JSON.stringify(regs, null, 2), "utf8");
+}
+
+async function readBlob(): Promise<Registro[]> {
+  try {
+    const { blobs } = await list({ prefix: BLOB_PATH });
+    if (!blobs.length) return [];
+    const res = await fetch(blobs[0].url, { cache: "no-store" });
+    if (!res.ok) return [];
+    const parsed = JSON.parse(await res.text());
+    if (Array.isArray(parsed)) return parsed as Registro[];
+  } catch {
+    // primer uso o blob vacío/corrupto
+  }
+  return [];
+}
+
+async function writeBlob(regs: Registro[]): Promise<void> {
+  await put(BLOB_PATH, JSON.stringify(regs), {
+    contentType: "application/json",
+    access: "public",
+    addRandomSuffix: false
+  });
+}
+
+async function read(): Promise<Registro[]> {
+  return BLOB_TOKEN ? readBlob() : readLocal();
+}
+
+async function write(regs: Registro[]): Promise<void> {
+  if (BLOB_TOKEN) return writeBlob(regs);
+  return writeLocal(regs);
 }
 
 export async function POST(req: NextRequest) {
@@ -70,35 +105,14 @@ export async function POST(req: NextRequest) {
 
   const registro: Registro = { nombre, telefono, provincia, tipo, source, ts: Date.now() };
 
-  // Modo Blob (Vercel free) — mejor esfuerzo, extra de persistencia
-  if (process.env.VERCEL_BLOB_READ_WRITE_TOKEN && !process.env.VERCEL) {
-    try {
-      const res = await fetch("https://api.vercel.com/v1/blob/store", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.VERCEL_BLOB_READ_WRITE_TOKEN}`
-        },
-        body: JSON.stringify({
-          key: "waitlist",
-          contentType: "application/json",
-          addRandomSuffix: false,
-          allowOverwrite: true,
-          data: JSON.stringify(registro)
-        })
-      });
-    } catch {
-      // sigue con el contador local
-    }
-  }
-
-  // Contador local. Los usuarios se suman con un toque, sin datos personales;
+  // Contador persistente. Los usuarios se suman con un toque, sin datos personales;
   // el dedupe por teléfono solo aplica a negocios.
-  const regs = await readLocal();
+  const regs = await read();
   const duplicado =
     esNegocio && regs.some((r) => r.tipo === "negocio" && r.telefono === telefono);
   if (!duplicado) {
     regs.push(registro);
-    await writeLocal(regs).catch(() => undefined);
+    await write(regs).catch(() => undefined);
   }
 
   const usuarios = regs.filter((r) => r.tipo === "usuario").length;
@@ -122,7 +136,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-  const regs = await readLocal().catch(() => []);
+  const regs = await read().catch(() => []);
   const total = regs.length;
   const usuarios = regs.filter((r) => r.tipo === "usuario").length;
   const negocios = regs.filter((r) => r.tipo === "negocio").length;
