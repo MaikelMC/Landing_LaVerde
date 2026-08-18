@@ -211,3 +211,70 @@ export async function notificarUsuario(
     notifySheetUsuario(registro, totalUsuarios)
   ]);
 }
+
+// ---------- Lectura: Google Sheets como fuente de verdad ----------
+
+async function getSheetsClient(): Promise<{ token: string; sheetId: string } | null> {
+  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+  const sheetId = process.env.WAITLIST_SPREADSHEET_ID;
+  if (!raw || !sheetId) return null;
+  const account = JSON.parse(raw) as ServiceAccount;
+  const token = await getAccessToken(account);
+  return { token, sheetId };
+}
+
+async function readSheetRange(
+  sheetId: string,
+  range: string,
+  token: string
+): Promise<string[][]> {
+  const url =
+    "https://sheets.googleapis.com/v4/spreadsheets/" +
+    encodeURIComponent(sheetId) +
+    "/values/" +
+    encodeURIComponent(range);
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error(`sheets-read ${res.status}`);
+  const data = (await res.json()) as { values?: string[][] };
+  return data.values ?? [];
+}
+
+function countDataRows(values: string[][]): number {
+  return values.filter((r) => r.some((c) => c !== "")).length;
+}
+
+// Todos los cupos (pestaña "Cupos"), sin la fila de encabezados.
+export async function getCupos(): Promise<Cupo[]> {
+  const client = await getSheetsClient();
+  if (!client) return [];
+  const range = process.env.WAITLIST_SHEET_RANGE || "Cupos!A:F";
+  const values = await readSheetRange(client.sheetId, range, client.token);
+  return values
+    .slice(1)
+    .map((row) => ({
+      nombre: row[0] ?? "",
+      telefono: row[1] ?? "",
+      provincia: row[2] ?? "",
+      tipo: (row[3] === "usuario" ? "usuario" : "negocio") as Cupo["tipo"],
+      source: row[4] ?? "",
+      ts: row[5] ? Date.parse(row[5]) || 0 : 0
+    }))
+    .filter((r) => r.nombre || r.telefono || r.provincia);
+}
+
+// Conteo de "Quiero usarla" (pestaña Usuarios) y de negocios (pestaña Cupos).
+export async function getCounts(): Promise<{ usuarios: number; negocios: number }> {
+  const client = await getSheetsClient();
+  if (!client) return { usuarios: 0, negocios: 0 };
+  const cuposRange = process.env.WAITLIST_SHEET_RANGE || "Cupos!A:F";
+  const usuariosRange = process.env.WAITLIST_SHEET_USUARIOS_RANGE || "Usuarios!A:D";
+  const [usuariosValues, cuposValues] = await Promise.all([
+    readSheetRange(client.sheetId, usuariosRange, client.token),
+    readSheetRange(client.sheetId, cuposRange, client.token)
+  ]);
+  const usuarios = Math.max(0, countDataRows(usuariosValues) - 1);
+  const negocios = Math.max(0, countDataRows(cuposValues) - 1);
+  return { usuarios, negocios };
+}
