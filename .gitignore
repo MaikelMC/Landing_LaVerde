@@ -22,6 +22,10 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.next-*.log
+.start-*.log
+.next-dev.pid
+.start-*.pid
 
 # env files
 .env
