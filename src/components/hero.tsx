@@ -1,10 +1,9 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowDown, ArrowRight, MapPin, Sparkles } from "lucide-react";
+import { ArrowDown, ArrowRight, MapPin, ShieldCheck, Sparkles } from "lucide-react";
 import Reveal from "@/components/ui/reveal";
-import Counter from "@/components/ui/counter";
-import { easeSpring, fadeUp, staggerParent } from "@/lib/motion";
+import { fadeUp, staggerParent } from "@/lib/motion";
 
 const MARQUEE = [
   "La Habana",
@@ -98,53 +97,53 @@ export default function Hero() {
             </a>
           </motion.div>
 
-          {/* Prueba social */}
-          <motion.dl
+          {/* Pilares */}
+          <motion.div
             variants={fadeUp}
-            className="mt-14 grid w-full max-w-md grid-cols-3 gap-4"
+            className="mt-12 grid w-full max-w-2xl grid-cols-3 gap-2 divide-x divide-white/10"
           >
             {[
               {
-                value: (
-                  <Counter
-                    to={14}
-                    format={(n) => `${n}`}
-                    className="font-display text-3xl font-bold text-verde-200"
-                  />
-                ),
-                label: "lugares recomendados"
+                icon: Sparkles,
+                phrase: "La mejor recomendación de lugares",
+                tint: "text-emerald-300",
+                glow: "bg-verde-400/25"
               },
               {
-                value: (
-                  <Counter
-                    to={9}
-                    format={(n) => `${n}`}
-                    className="font-display text-3xl font-bold text-verde-200"
-                  />
-                ),
-                label: "provincias"
+                icon: MapPin,
+                phrase: "Todas las provincias de Cuba",
+                tint: "text-verde-300",
+                glow: "bg-verde-400/20"
               },
               {
-                value: (
-                  <Counter
-                    to={1240}
-                    duration={2.2}
-                    format={(n) => `${n}+`}
-                    className="font-display text-3xl font-bold text-verde-200"
-                  />
-                ),
-                label: "guardados"
+                icon: ShieldCheck,
+                phrase: "Indicaciones de calidad",
+                tint: "text-verde-200",
+                glow: "bg-emerald-400/20"
               }
-            ].map((stat) => (
-              <div key={stat.label} className="flex flex-col gap-1">
-                <dt className="sr-only">{stat.label}</dt>
-                <dd className="text-center">{stat.value}</dd>
-                <dd className="text-[11px] font-medium uppercase tracking-[0.14em] text-white/50">
-                  {stat.label}
-                </dd>
-              </div>
-            ))}
-          </motion.dl>
+            ].map((p) => {
+              const Icon = p.icon;
+              return (
+                <div
+                  key={p.phrase}
+                  className="group relative flex flex-col items-center gap-2 px-2 text-center"
+                >
+                  <div
+                    aria-hidden
+                    className={`pointer-events-none absolute -top-2 h-12 w-12 rounded-full ${p.glow} blur-2xl opacity-60`}
+                  />
+                  <span
+                    className={`relative grid h-9 w-9 place-items-center rounded-full sm:h-11 sm:w-11 ${p.tint}`}
+                  >
+                    <Icon className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={1.8} />
+                  </span>
+                  <p className="relative font-display text-[12px] leading-tight text-white/70 sm:text-[15px]">
+                    {p.phrase}
+                  </p>
+                </div>
+              );
+            })}
+          </motion.div>
         </motion.div>
       </div>
 
