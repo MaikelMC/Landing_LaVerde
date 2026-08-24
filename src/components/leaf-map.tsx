@@ -1,7 +1,7 @@
 "use client";
 
 import L from "leaflet";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   MapContainer,
   Marker,
@@ -14,33 +14,35 @@ import "leaflet/dist/leaflet.css";
 import type { Place } from "@/lib/places";
 import { CATEGORY_META } from "@/lib/places";
 
-// Bounding box de Cuba para el encuadre inicial
+// Bounding box de Cuba para el encuadre inicial y la delimitación de la vista
 const CUBA_BOUNDS: L.LatLngBoundsExpression = [
   [19.8, -85.0],
   [23.3, -74.0]
 ];
 
-// Pin premium personalizado
+// Pin premium personalizado (centrado en la coordenada para no desbordar al mar)
 function makePin(selected: boolean) {
   const el = document.createElement("div");
-  el.style.cssText = `position:relative;width:0;height:0;`;
-  const inner = document.createElement("div");
-  inner.style.cssText = `
-    position:absolute;left:-16px;top:-42px;
-    width:32px;height:32px;border-radius:9999px 9999px 9999px 4px;
-    transform:rotate(-45deg);
+  el.style.cssText = `
+    width:34px;height:34px;border-radius:9999px;
     background:linear-gradient(135deg, #35AF6D, #0F7A41);
-    border:2.5px solid #ffffff;
+    border:3px solid #ffffff;
     box-shadow:0 8px 18px rgba(8,19,13,0.35);
     display:grid;place-items:center;
-    ${selected ? "outline:4px solid rgba(53,175,109,0.25);" : ""}
+    ${selected ? "outline:5px solid rgba(53,175,109,0.30);outline-offset:2px;" : ""}
   `;
   const dot = document.createElement("div");
-  dot.style.cssText =
-    "width:10px;height:10px;border-radius:9999px;background:#fff;transform:rotate(45deg);";
-  inner.appendChild(dot);
-  el.appendChild(inner);
-  return L.divIcon({ html: el.outerHTML, iconSize: [0, 0], iconAnchor: [16, 42], className: "" });
+  dot.style.cssText = "width:10px;height:10px;border-radius:9999px;background:#fff;";
+  el.appendChild(dot);
+  return L.divIcon({ html: el.outerHTML, iconSize: [34, 34], iconAnchor: [17, 17], className: "" });
+}
+
+// Pin de cluster (agrupa puntos que se solapan en zoom bajo)
+function makeClusterIcon(count: number) {
+  const el = document.createElement("div");
+  el.style.cssText = `display:grid;place-items:center;width:46px;height:46px;border-radius:9999px;background:linear-gradient(135deg,#35AF6D,#0F7A41);color:#fff;font-weight:700;font-size:16px;border:3px solid #fff;box-shadow:0 8px 18px rgba(8,19,13,0.35);`;
+  el.textContent = String(count);
+  return L.divIcon({ html: el.outerHTML, iconSize: [46, 46], iconAnchor: [23, 23], className: "" });
 }
 
 // Componente que reacciona a la selección: vuela al lugar
@@ -97,7 +99,7 @@ function ScrollZoomOnFocus() {
   return null;
 }
 
-// Encuadra Cuba + ajusta al tocar mapa (una vez)
+// Encuadra Cuba al cargar
 function InitialFit() {
   const map = useMap();
   useEffect(() => {
@@ -107,6 +109,80 @@ function InitialFit() {
   return null;
 }
 
+// Sincroniza el zoom del mapa con el estado para recalcular los clusters
+function MapSync({
+  onMap,
+  onZoom
+}: {
+  onMap: (m: L.Map) => void;
+  onZoom: (z: number) => void;
+}) {
+  const map = useMap();
+  useEffect(() => {
+    onMap(map);
+    const handler = () => onZoom(map.getZoom());
+    map.on("zoomend", handler);
+    return () => {
+      map.off("zoomend", handler);
+    };
+  }, [map, onMap, onZoom]);
+  return null;
+}
+
+type ClusterItem =
+  | { type: "pin"; key: string; place: Place; pos: [number, number] }
+  | {
+      type: "cluster";
+      key: string;
+      count: number;
+      places: Place[];
+      pos: [number, number];
+    };
+
+// Agrupa los puntos que caen en la misma celda según el zoom (declutter)
+function buildItems(places: Place[], zoom: number): ClusterItem[] {
+  if (zoom >= 13) {
+    return places.map((p) => ({
+      type: "pin",
+      key: p.id,
+      place: p,
+      pos: [p.lat, p.lng]
+    }));
+  }
+
+  const cellSize = 0.6 / Math.pow(2, zoom - 7);
+  const groups = new Map<string, Place[]>();
+  for (const p of places) {
+    const k = `${Math.floor(p.lat / cellSize)}_${Math.floor(p.lng / cellSize)}`;
+    const g = groups.get(k);
+    if (g) g.push(p);
+    else groups.set(k, [p]);
+  }
+
+  const out: ClusterItem[] = [];
+  for (const [, arr] of groups) {
+    if (arr.length === 1) {
+      out.push({
+        type: "pin",
+        key: arr[0].id,
+        place: arr[0],
+        pos: [arr[0].lat, arr[0].lng]
+      });
+    } else {
+      const lat = arr.reduce((s, p) => s + p.lat, 0) / arr.length;
+      const lng = arr.reduce((s, p) => s + p.lng, 0) / arr.length;
+      out.push({
+        type: "cluster",
+        key: `c_${lat.toFixed(4)}_${lng.toFixed(4)}`,
+        count: arr.length,
+        places: arr,
+        pos: [lat, lng]
+      });
+    }
+  }
+  return out;
+}
+
 interface LeafMapProps {
   places: Place[];
   selectedId: string | null;
@@ -114,69 +190,94 @@ interface LeafMapProps {
 }
 
 export default function LeafMap({ places, selectedId, onSelect }: LeafMapProps) {
-  const icons = useMemo(
-    () => places.map((p) => makePin(p.id === selectedId)),
-    [places, selectedId]
-  );
+  const mapRef = useRef<L.Map | null>(null);
+  const [zoom, setZoom] = useState(7);
 
   const iconsById = useMemo(() => {
     const m: Record<string, L.DivIcon> = {};
-    places.forEach((p, i) => (m[p.id] = icons[i]));
+    for (const p of places) m[p.id] = makePin(p.id === selectedId);
     return m;
-  }, [places, icons]);
+  }, [places, selectedId]);
+
+  const items = useMemo(() => buildItems(places, zoom), [places, zoom]);
 
   return (
     <MapContainer
       center={[22.0, -79.5]}
       zoom={7}
+      minZoom={6}
+      maxZoom={17}
       zoomControl={false}
       preferCanvas
       scrollWheelZoom={false}
+      maxBounds={CUBA_BOUNDS}
+      maxBoundsViscosity={0.9}
       className="z-0 h-full w-full"
       attributionControl
     >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; La Verde'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+        noWrap
       />
       <InitialFit />
       <FlyToSelection places={places} selectedId={selectedId} />
       <ScrollZoomOnFocus />
+      <MapSync onMap={(m) => (mapRef.current = m)} onZoom={setZoom} />
       <ZoomControl position="bottomright" />
-      {places.map((p) => (
-        <Marker
-          key={p.id}
-          position={[p.lat, p.lng]}
-          icon={iconsById[p.id]}
-          eventHandlers={{
-            click: () => onSelect(p)
-          }}
-        >
-          <Popup closeButton={false} minWidth={220}>
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-wide text-verde-300">
-                {CATEGORY_META[p.category].emoji} {CATEGORY_META[p.category].label} ·{" "}
-                {p.priceLabel}
+      {items.map((item) =>
+        item.type === "pin" ? (
+          <Marker
+            key={item.key}
+            position={item.pos}
+            icon={iconsById[item.place.id]}
+            eventHandlers={{ click: () => onSelect(item.place) }}
+          >
+            <Popup closeButton={false} minWidth={220}>
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-verde-300">
+                  {CATEGORY_META[item.place.category].emoji}{" "}
+                  {CATEGORY_META[item.place.category].label} ·{" "}
+                  {item.place.priceLabel}
+                </div>
+                <div className="mt-1 font-display text-base font-bold text-white">
+                  {item.place.name}
+                </div>
+                <div className="text-xs text-white/60">
+                  {item.place.city}, {item.place.province}
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelect(item.place);
+                  }}
+                  className="mt-2 w-full rounded-full bg-verde-400 py-1.5 text-xs font-bold text-verde-950"
+                >
+                  Ver detalles
+                </button>
               </div>
-              <div className="mt-1 font-display text-base font-bold text-white">
-                {p.name}
-              </div>
-              <div className="text-xs text-white/60">
-                {p.city}, {p.province}
-              </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelect(p);
-                }}
-                className="mt-2 w-full rounded-full bg-verde-400 py-1.5 text-xs font-bold text-verde-950"
-              >
-                Ver detalles
-              </button>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+            </Popup>
+          </Marker>
+        ) : (
+          <Marker
+            key={item.key}
+            position={item.pos}
+            icon={makeClusterIcon(item.count)}
+            eventHandlers={{
+              click: () => {
+                const m = mapRef.current;
+                if (!m) return;
+                m.flyToBounds(
+                  L.latLngBounds(
+                    item.places.map((p) => [p.lat, p.lng] as [number, number])
+                  ),
+                  { padding: [70, 70], maxZoom: 15, duration: 1 }
+                );
+              }
+            }}
+          />
+        )
+      )}
     </MapContainer>
   );
 }
