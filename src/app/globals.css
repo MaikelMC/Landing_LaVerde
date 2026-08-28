@@ -136,7 +136,7 @@
   outline: none;
 }
 .leaflet-tile {
-  filter: saturate(0.9) contrast(1.02);
+  filter: saturate(0.85) brightness(1.04) contrast(0.97);
 }
 .leaflet-control-container .leaflet-control {
   border: none !important;
