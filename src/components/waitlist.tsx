@@ -30,8 +30,8 @@ export default function Waitlist() {
             </span>
           </h2>
           <p className="mx-auto mt-5 max-w-md text-pretty text-base leading-relaxed text-white/65">
-            El lanzamiento en Cuba está abierto y sin límite de cupos. Súmate a la
-            lista y entra antes que el mapa público.
+            El lanzamiento está abierto. Los cupos para los primeros negocios son
+            limitados. Súmate a la lista y entra antes que el mapa público.
           </p>
         </Reveal>
 

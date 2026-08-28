@@ -19,7 +19,7 @@ const STEPS = [
   {
     icon: HeartHandshake,
     title: "Te damos la verde",
-    desc: "En Cuba, cuando alguien te indica el lugar correcto, te da la verde. Eso hacemos: señalarte lo que de verdad necesitas, sin rodeos."
+    desc: "Cuando alguien te pasa el dato bueno, te da la verde. Eso hacemos nosotros: señalarte lo que de verdad necesitas, sin rodeos."
   }
 ];
 

@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     template: "%s · La Verde"
   },
   description:
-    "La Verde te pasa el dato: el lugar correcto cerca de ti, para compartir, visitar o comprar, con ayuda de una asistente IA. En Cuba, cuando alguien te indica lo que necesitas, te da la verde.",
+    "La Verde te pasa el dato: el lugar correcto cerca de ti, para compartir, visitar o comprar. Le preguntas con tus palabras y te dice a dónde ir, con el contexto real.",
   keywords: [
     "La Verde",
     "lugares de Cuba",
