@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Leaf, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { easeSpring } from "@/lib/motion";
@@ -66,7 +66,20 @@ export default function Navigation() {
             className="group flex items-center gap-2"
           >
             <span className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-verde-400 to-verde-600 shadow-soft transition-transform duration-500 group-hover:rotate-[8deg]">
-              <Leaf className="h-4.5 w-4.5 text-verde-950" strokeWidth={2.2} />
+              <svg viewBox="0 0 64 64" className="h-5 w-5" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M32 3C20.4 3 11 12.4 11 24c0 17.4 21 36.4 21 36.4S53 41.4 53 24C53 12.4 43.6 3 32 3Z" fill="url(#nav-lv)"/>
+                <path d="M32 10.4C23 15.7 16.4 22.4 16.4 30.2a15.6 15.6 0 0 0 31.2 0C47.6 22.4 41 15.7 32 10.4Z" fill="#06211A" opacity="0.3"/>
+                <path d="M32 20.6c-5.6 4.4-8.6 8.6-8.6 14a8.6 8.6 0 0 0 17.2 0c0-5.4-3-9.6-8.6-14Z" fill="#0A5C31"/>
+                <path d="M32 24.4c-3.6 2.8-5.4 5.5-5.4 9.2a5.4 5.4 0 0 0 10.8 0c0-3.7-1.8-6.4-5.4-9.2Z" fill="#7CE3A8"/>
+                <path d="M32 18.5v20" stroke="#EAF7EF" strokeWidth="1.8" strokeLinecap="round" opacity="0.9"/>
+                <defs>
+                  <linearGradient id="nav-lv" x1="12" y1="4" x2="52" y2="60" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stopColor="#7CE3A8"/>
+                    <stop offset="0.55" stopColor="#35AF6D"/>
+                    <stop offset="1" stopColor="#0F7A41"/>
+                  </linearGradient>
+                </defs>
+              </svg>
             </span>
             <span className="font-display text-sm font-bold tracking-tight">
               La Verde

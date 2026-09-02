@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>La Verde — Kit de Historias</title>
+  <style>
+    :root {
+      --verde-300: #52d28a;
+      --verde-400: #35af6d;
+      --verde-600: #0f7a41;
+      --emerald: #7ce3a8;
+      --dark: #0a1f17;
+      --sand: #f7f1e6;
+      --ink: #0e1513;
+      --font-d: "Space Grotesk", sans-serif;
+      --font-b: "Plus Jakarta Sans", sans-serif;
+      --font-m: "JetBrains Mono", monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-b);
+      background: radial-gradient(120% 90% at 80% 0%, #123b28, transparent 60%), #071b14;
+      color: var(--sand);
+      min-height: 100vh;
+    }
+    .wrap { max-width: 1240px; margin: 0 auto; padding: 64px 40px 96px; }
+    header { display: flex; align-items: center; gap: 28px; margin-bottom: 48px; }
+    header .logo { width: 84px; height: 84px; filter: drop-shadow(0 14px 30px rgba(53,175,109,0.5)); }
+    header h1 { font-family: var(--font-d); font-size: 44px; letter-spacing: -0.02em; }
+    header h1 .g { color: var(--emerald); }
+    header p { color: rgba(247,241,230,0.6); margin-top: 6px; font-size: 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 40px; }
+    .card { border-radius: 22px; overflow: hidden; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); }
+    .shot { position: relative; height: 604px; overflow: hidden; }
+    .shot iframe { width: 1080px; height: 1920px; border: 0; transform: scale(0.3148); transform-origin: top left; pointer-events: none; }
+    .meta { padding: 20px 24px 24px; }
+    .meta .num { font-family: var(--font-m); font-size: 12px; letter-spacing: 0.2em; color: var(--emerald); }
+    .meta .t { font-family: var(--font-d); font-size: 22px; font-weight: 700; margin: 6px 0 12px; }
+    .meta a { display: inline-block; font-size: 14px; font-weight: 600; color: var(--ink); background: var(--emerald); text-decoration: none; padding: 10px 20px; border-radius: 999px; }
+    .howto { margin-top: 64px; padding: 36px 40px; border-radius: 22px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); }
+    .howto h2 { font-family: var(--font-d); font-size: 24px; margin-bottom: 18px; }
+    .howto ol { padding-left: 22px; display: grid; gap: 10px; color: rgba(247,241,230,0.75); font-size: 15px; line-height: 1.5; }
+    .howto code { font-family: var(--font-m); font-size: 13px; background: rgba(124,227,168,0.12); color: var(--emerald); padding: 2px 8px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <img class="logo" src="assets/logo.svg" alt="La Verde" />
+      <div>
+        <h1>Kit de Historias <span class="g">La Verde</span></h1>
+        <p>8 historias en HTML · 1080×1920 · sistema visual &ldquo;Ethereal Green Glass&rdquo;</p>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <div class="shot"><iframe src="1-gancho.html"></iframe></div>
+        <div class="meta"><div class="num">01 / 08</div><div class="t">El gancho</div><a href="1-gancho.html">Abrir</a></div>
+      </div>
+      <div class="card">
+        <div class="shot"><iframe src="2-problema.html"></iframe></div>
+        <div class="meta"><div class="num">02 / 08</div><div class="t">El problema</div><a href="2-problema.html">Abrir</a></div>
+      </div>
+      <div class="card">
+        <div class="shot"><iframe src="3-promesa.html"></iframe></div>
+        <div class="meta"><div class="num">03 / 08</div><div class="t">La promesa</div><a href="3-promesa.html">Abrir</a></div>
+      </div>
+      <div class="card">
+        <div class="shot"><iframe src="4-paso1.html"></iframe></div>
+        <div class="meta"><div class="num">04 / 08</div><div class="t">Paso 1 · Pregunta</div><a href="4-paso1.html">Abrir</a></div>
+      </div>
+      <div class="card">
+        <div class="shot"><iframe src="5-paso2.html"></iframe></div>
+        <div class="meta"><div class="num">05 / 08</div><div class="t">Paso 2 · El dato real</div><a href="5-paso2.html">Abrir</a></div>
+      </div>
+      <div class="card">
+        <div class="shot"><iframe src="6-paso3.html"></iframe></div>
+        <div class="meta"><div class="num">06 / 08</div><div class="t">Paso 3 · Te da la verde</div><a href="6-paso3.html">Abrir</a></div>
+      </div>
+      <div class="card">
+        <div class="shot"><iframe src="7-diferencial.html"></iframe></div>
+        <div class="meta"><div class="num">07 / 08</div><div class="t">El diferencial</div><a href="7-diferencial.html">Abrir</a></div>
+      </div>
+      <div class="card">
+        <div class="shot"><iframe src="8-negocios.html"></iframe></div>
+        <div class="meta"><div class="num">08 / 08</div><div class="t">Para tu negocio</div><a href="8-negocios.html">Abrir</a></div>
+      </div>
+    </div>
+
+    <div class="howto">
+      <h2>Cómo capturarlas en alta resolución</h2>
+      <ol>
+        <li>Abre una historia (p. ej. <code>1-gancho.html</code>) en tu navegador.</li>
+        <li>Pulsa <code>Ctrl + Shift + I</code> (DevTools) y luego <code>Ctrl + Shift + M</code> (modo dispositivo).</li>
+        <li>Arriba, escribe <code>1080</code> × <code>1920</code> como tamaño de pantalla.</li>
+        <li>En el menú de DevTools (&hellip;) elige <code>Capture full size screenshot</code>.</li>
+        <li>Repite por cada historia y publícalas.</li>
+      </ol>
+    </div>
+  </div>
+</body>
+</html>

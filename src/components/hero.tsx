@@ -6,14 +6,14 @@ import Reveal from "@/components/ui/reveal";
 import { fadeUp, staggerParent } from "@/lib/motion";
 
 const MARQUEE = [
-  "La Habana",
-  "Viñales",
-  "Varadero",
-  "Cojímar",
-  "Trinidad",
-  "Matanzas",
   "Santiago de Cuba",
-  "Cienfuegos"
+  "El Tivolí",
+  "Vista Alegre",
+  "Siboney",
+  "El Cobre",
+  "Gran Piedra",
+  "Baconao",
+  "Reparto Sueño"
 ];
 
 export default function Hero() {
@@ -111,7 +111,7 @@ export default function Hero() {
               },
               {
                 icon: MapPin,
-                phrase: "Todas las provincias de Cuba",
+                phrase: "Comenzamos en Santiago de Cuba",
                 tint: "text-verde-300",
                 glow: "bg-verde-400/20"
               },

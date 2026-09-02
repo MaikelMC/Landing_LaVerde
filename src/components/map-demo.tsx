@@ -3,35 +3,28 @@
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import { MapPin, Navigation, Users } from "lucide-react";
-import { motion } from "framer-motion";
 import Reveal from "@/components/ui/reveal";
 import Counter from "@/components/ui/counter";
-import { PLACES, type Place } from "@/lib/places";
-import { CATEGORY_META } from "@/lib/places";
+import { FEATURED_PLACES, type Place } from "@/lib/places";
+import { categoryMeta } from "@/lib/places";
 import { cn } from "@/lib/utils";
 
-// Mapa Leaflet cargado solo en cliente, aislado del bundle principal
 const LeafMap = dynamic(() => import("@/components/leaf-map"), {
   ssr: false,
-  loading: () => <MapSkeleton />
-});
-
-function MapSkeleton() {
-  return (
+  loading: () => (
     <div className="flex h-full w-full items-center justify-center bg-verde-950/40">
       <div className="flex flex-col items-center gap-3 text-white/50">
-        <div className="h-10 w-10 animate-pulse rounded-full bg-verde-400/30" />
-        <p className="text-xs uppercase tracking-[0.2em]">Cargando el mapa verde…</p>
+        <div className="h-8 w-8 animate-pulse rounded-full bg-verde-400/30" />
+        <p className="text-xs uppercase tracking-[0.18em]">Cargando mapa…</p>
       </div>
     </div>
-  );
-}
+  )
+});
 
 export default function MapDemo() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [showAll, setShowAll] = useState(false);
-  const visible = showAll ? PLACES : PLACES.slice(0, 4);
-  const selected = PLACES.find((p) => p.id === selectedId);
+  const visible = FEATURED_PLACES;
+  const selected = FEATURED_PLACES.find((p) => p.id === selectedId);
 
   const pick = (p: Place) => {
     setSelectedId(p.id);
@@ -45,7 +38,7 @@ export default function MapDemo() {
             El mapa que te da la verde
           </span>
           <h2 className="mt-5 font-display text-balance text-4xl font-bold tracking-[-0.02em] text-ink sm:text-5xl">
-            Cuba, sin ruido.{" "}
+            Santiago, sin ruido.{" "}
             <span className="text-verde-600">Solo lo bueno.</span>
           </h2>
           <p className="mt-5 text-pretty text-base leading-relaxed text-ink-soft/80 sm:text-lg">
@@ -63,7 +56,7 @@ export default function MapDemo() {
                 <div className="relative h-[460px] sm:h-[540px] lg:h-auto lg:min-h-[560px]">
                   <div className="absolute inset-0">
                     <LeafMap
-                      places={PLACES}
+                      places={FEATURED_PLACES}
                       selectedId={selectedId}
                       onSelect={pick}
                     />
@@ -104,7 +97,7 @@ export default function MapDemo() {
                         >
                           <div className="flex items-center justify-between gap-2">
                             <span className="text-xs font-semibold text-verde-700">
-                              {CATEGORY_META[p.category].emoji} {CATEGORY_META[p.category].label}
+                              {categoryMeta(p.category).emoji} {categoryMeta(p.category).label}
                             </span>
                             <span className="text-[11px] font-medium text-ink-soft/50">
                               {p.priceLabel}
@@ -125,14 +118,6 @@ export default function MapDemo() {
                         </button>
                       );
                     })}
-                    {!showAll && (
-                      <button
-                        onClick={() => setShowAll(true)}
-                        className="mt-1 w-full rounded-2xl border border-dashed border-verde-400/40 bg-verde-50/50 py-3 text-xs font-semibold text-verde-700 transition-colors hover:bg-verde-50"
-                      >
-                        Ver todos los lugares →
-                      </button>
-                    )}
                   </div>
 
                   <div className="border-t border-ink/5 px-6 py-4">
@@ -159,7 +144,7 @@ export default function MapDemo() {
         {/* Tarjeta de estado (overlay sobre el mapa, sutil) */}
         <Reveal delay={0.2} className="mt-6 text-center">
           <p className="text-xs text-ink-soft/50">
-            * Vista previa con datos de muestra. La versión uno llegará con cientos de lugares recomendados.
+            * Vista previa con los primeros lugares de Santiago de Cuba. La versión uno llegará con cientos más.
           </p>
         </Reveal>
       </div>

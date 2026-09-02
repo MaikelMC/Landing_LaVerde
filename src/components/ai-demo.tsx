@@ -12,13 +12,13 @@ import {
 import { useRef, useState } from "react";
 import Reveal from "@/components/ui/reveal";
 import { PLACES, type Place } from "@/lib/places";
-import { CATEGORY_META } from "@/lib/places";
+import { categoryMeta } from "@/lib/places";
 import { cn } from "@/lib/utils";
 import { easeSpring } from "@/lib/motion";
 
 const EXAMPLES = [
   "Un lugar con vista al mar para cenar esta noche",
-  "Café de especialidad para trabajar en La Habana",
+  "Café de especialidad para trabajar en Santiago de Cuba",
   "Una playa cercana para el fin de semana"
 ];
 
@@ -26,13 +26,18 @@ const EXAMPLES = [
 function answerQuery(query: string): Place[] {
   const q = query.toLowerCase();
   const keywordMap: Record<string, string[]> = {
-    mar: ["mar", "malecón", "playa", "vista", "pescado"],
-    noche: ["noche", "cenar", "copas", "música", "bar"],
-    café: ["café", "desayuno", "brunch", "trabajar"],
-    trabajo: ["trabajar", "wifi", "café"],
-    playa: ["playa", "sol", "natación"],
-    naturaleza: ["naturaleza", "senderismo", "valle", "cueva", "picnic"],
-    cultura: ["historia", "cultura", "arquitectura", "arte"]
+    restaurante: ["comer", "cenar", "restaurante", "almuerzo", "criollo"],
+    bar: ["copas", "bar", "noche", "música", "trago"],
+    cafe: ["café", "desayuno", "brunch", "wifi"],
+    takeaway: ["para llevar", "rápido", "domicilio"],
+    tienda: ["tienda", "comprar", "abarrote", "productos", "libros"],
+    salud: ["salud", "farmacia", "peluquería", "belleza", "medicina"],
+    servicios: ["taller", "reparación", "repuestos", "técnico"],
+    hospedaje: ["hostal", "hospedaje", "hotel", "alojamiento", "cuarto"],
+    playa: ["playa", "sol", "mar", "natación"],
+    naturaleza: ["naturaleza", "senderismo", "montaña", "valle"],
+    cultura: ["historia", "cultura", "museo", "arte", "trova"],
+    transporte: ["transporte", "taxi", "carro", "particular"]
   };
   const hits = new Set<Place>();
   const parts: string[] = [];
@@ -199,7 +204,7 @@ export default function AiDemo() {
                     className="flex items-center gap-4 rounded-3xl border border-white/10 bg-white/[0.04] p-4"
                   >
                     <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-verde-400/15 text-xl">
-                      {CATEGORY_META[p.category].emoji}
+                      {categoryMeta(p.category).emoji}
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">

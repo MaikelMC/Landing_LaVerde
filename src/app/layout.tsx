@@ -27,11 +27,12 @@ export const metadata: Metadata = {
     "La Verde te pasa el dato: el lugar correcto cerca de ti, para compartir, visitar o comprar. Le preguntas con tus palabras y te dice a dónde ir, con el contexto real.",
   keywords: [
     "La Verde",
-    "lugares de Cuba",
-    "mapa Cuba",
-    "restaurantes La Habana",
-    "playas Cuba",
-    "guía Cuba"
+    "negocios locales Santiago de Cuba",
+    "restaurantes Santiago de Cuba",
+    "mapa Santiago de Cuba",
+    "que hacer en Santiago de Cuba",
+    "negocios locales Cuba",
+    "guía Santiago de Cuba"
   ],
   authors: [{ name: "La Verde" }],
   openGraph: {

@@ -4,7 +4,7 @@
   "private": true,
   "description": "La Verde — Preview Experience · Descubre los mejores lugares de Cuba con La Verde",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 4000",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
