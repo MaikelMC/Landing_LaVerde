@@ -49,7 +49,7 @@ export default function Waitlist() {
             <h3 className="mt-4 font-display text-2xl font-bold leading-tight tracking-[-0.01em]">
               Primeros{" "}
               <span className="bg-gradient-to-r from-verde-200 to-emerald-400 bg-clip-text text-transparent">
-                15 días gratis
+                30 días gratis
               </span>{" "}
               en la plataforma
             </h3>
